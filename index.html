@@ -266,6 +266,12 @@
                     <div class="tool-title">数字大小写转换</div>
                     <div class="tool-desc">阿拉伯数字转中文大写（财务专用，支持小数）</div>
                 </a>
+                <!-- 新增：单位换算工具卡片 -->
+                <a href="#" class="tool-card" data-tool="unit-convert">
+                    <div class="tool-icon">📏</div>
+                    <div class="tool-title">常用单位换算</div>
+                    <div class="tool-desc">长度/重量/面积换算，支持米/千米/斤/公斤/平方米等</div>
+                </a>
 
                 <!-- 可扩展：加更多工具，复制上面的结构改参数就行 -->
                 <a href="#" class="tool-card" data-tool="more-tools">
@@ -348,6 +354,52 @@
                     <div class="result-title">转换结果：</div>
                     <div id="number-result">请输入数字后点击「转中文大写」</div>
                 </div>
+                <a href="#" class="back-btn" onclick="showDirectory()">← 返回工具目录</a>
+            </div>
+        </div>
+
+        <!-- 新增：工具6：单位换算页面 -->
+        <div class="tool-page" id="unit-convert">
+            <h2>常用单位换算工具</h2>
+            <div class="tool-content">
+                <!-- 换算类型选择 -->
+                <div style="margin-bottom: 15px;">
+                    <label style="font-size: 16px; margin-right: 10px;">换算类型：</label>
+                    <select id="convert-type"
+                        style="padding: 8px 12px; border-radius: 6px; border: 1px solid #ddd; font-size: 16px;">
+                        <option value="length">长度换算（米/千米/厘米/毫米/尺/寸）</option>
+                        <option value="weight">重量换算（公斤/斤/克/千克/吨）</option>
+                        <option value="area">面积换算（平方米/平方千米/公顷/亩）</option>
+                    </select>
+                </div>
+
+                <!-- 输入区域 -->
+                <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
+                    <input type="number" id="unit-input" placeholder="请输入数值"
+                        style="flex: 1; padding: 15px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; min-width: 200px;">
+                    <select id="from-unit"
+                        style="padding: 8px 12px; border-radius: 6px; border: 1px solid #ddd; font-size: 16px; min-width: 150px;">
+                        <!-- 选项会根据换算类型动态更新 -->
+                        <option value="m">米 (m)</option>
+                    </select>
+                    <span style="align-self: center; font-size: 18px;">→</span>
+                    <select id="to-unit"
+                        style="padding: 8px 12px; border-radius: 6px; border: 1px solid #ddd; font-size: 16px; min-width: 150px;">
+                        <!-- 选项会根据换算类型动态更新 -->
+                        <option value="km">千米 (km)</option>
+                    </select>
+                </div>
+
+                <!-- 操作按钮 -->
+                <button class="btn" id="unit-convert-btn">开始换算</button>
+                <button class="btn" id="reset-unit">清空</button>
+
+                <!-- 结果区域 -->
+                <div class="result-area">
+                    <div class="result-title">换算结果：</div>
+                    <div id="unit-result">请输入数值并选择单位后点击「开始换算」</div>
+                </div>
+
                 <a href="#" class="back-btn" onclick="showDirectory()">← 返回工具目录</a>
             </div>
         </div>
@@ -608,6 +660,122 @@
         document.getElementById('reset-number').addEventListener('click', function () {
             document.getElementById('number-input').value = '';
             document.getElementById('number-result').textContent = '请输入数字后点击「转中文大写」';
+        });
+
+        // 新增：7. 单位换算功能
+        document.addEventListener('DOMContentLoaded', function () {
+            // 定义各类型的单位配置（键：单位值，值：{名称、换算系数（以基准单位为1）}）
+            const unitConfig = {
+                length: {
+                    base: 'm', // 基准单位：米
+                    units: {
+                        m: { name: '米 (m)', rate: 1 },
+                        km: { name: '千米 (km)', rate: 0.001 },
+                        cm: { name: '厘米 (cm)', rate: 100 },
+                        mm: { name: '毫米 (mm)', rate: 1000 },
+                        chi: { name: '尺', rate: 3 },
+                        cun: { name: '寸', rate: 30 }
+                    }
+                },
+                weight: {
+                    base: 'kg', // 基准单位：公斤
+                    units: {
+                        kg: { name: '公斤 (kg)', rate: 1 },
+                        jin: { name: '斤', rate: 2 },
+                        g: { name: '克 (g)', rate: 1000 },
+                        t: { name: '吨 (t)', rate: 0.001 },
+                        mg: { name: '毫克 (mg)', rate: 1000000 }
+                    }
+                },
+                area: {
+                    base: 'm2', // 基准单位：平方米
+                    units: {
+                        m2: { name: '平方米 (m²)', rate: 1 },
+                        km2: { name: '平方千米 (km²)', rate: 1e-6 },
+                        hectare: { name: '公顷', rate: 0.0001 },
+                        mu: { name: '亩', rate: 0.0015 }
+                    }
+                }
+            };
+
+            // 1. 切换换算类型时，更新单位下拉框
+            const convertType = document.getElementById('convert-type');
+            const fromUnit = document.getElementById('from-unit');
+            const toUnit = document.getElementById('to-unit');
+
+            function updateUnitOptions(type) {
+                // 清空原有选项
+                fromUnit.innerHTML = '';
+                toUnit.innerHTML = '';
+                // 获取当前类型的单位配置
+                const units = unitConfig[type].units;
+                // 填充选项
+                for (const [key, value] of Object.entries(units)) {
+                    const option1 = document.createElement('option');
+                    option1.value = key;
+                    option1.textContent = value.name;
+                    fromUnit.appendChild(option1);
+
+                    const option2 = document.createElement('option');
+                    option2.value = key;
+                    option2.textContent = value.name;
+                    toUnit.appendChild(option2);
+                }
+                // 默认选中第一个和第二个选项
+                fromUnit.selectedIndex = 0;
+                toUnit.selectedIndex = 1;
+            }
+
+            // 初始化加载长度单位
+            updateUnitOptions('length');
+            // 监听类型切换
+            convertType.addEventListener('change', function () {
+                updateUnitOptions(this.value);
+            });
+
+            // 2. 换算核心逻辑
+            document.getElementById('unit-convert-btn').addEventListener('click', function () {
+                const inputVal = parseFloat(document.getElementById('unit-input').value);
+                const resultEl = document.getElementById('unit-result');
+
+                // 空值/非数字判断
+                if (isNaN(inputVal)) {
+                    resultEl.textContent = '请输入有效的数字！';
+                    return;
+                }
+
+                // 获取当前换算类型、源单位、目标单位
+                const type = convertType.value;
+                const fromKey = fromUnit.value;
+                const toKey = toUnit.value;
+
+                // 源单位和目标单位相同
+                if (fromKey === toKey) {
+                    resultEl.textContent = `${inputVal} ${unitConfig[type].units[fromKey].name} = ${inputVal} ${unitConfig[type].units[toKey].name}`;
+                    return;
+                }
+
+                // 换算公式：先转基准单位，再转目标单位
+                const baseRate = unitConfig[type].base;
+                const fromRate = unitConfig[type].units[fromKey].rate;
+                const toRate = unitConfig[type].units[toKey].rate;
+                // 计算：输入值 / 源单位换算系数 = 基准单位值；基准单位值 * 目标单位换算系数 = 目标值
+                const resultVal = (inputVal / fromRate) * toRate;
+                // 保留4位小数（避免过长）
+                const fixedResult = resultVal.toFixed(4).replace(/\.?0*$/, ''); // 去掉末尾的0和小数点
+
+                // 显示结果
+                resultEl.textContent = `${inputVal} ${unitConfig[type].units[fromKey].name} = ${fixedResult} ${unitConfig[type].units[toKey].name}`;
+            });
+
+            // 3. 清空按钮
+            document.getElementById('reset-unit').addEventListener('click', function () {
+                document.getElementById('unit-input').value = '';
+                document.getElementById('unit-result').textContent = '请输入数值并选择单位后点击「开始换算」';
+                // 重置单位选择
+                fromUnit.selectedIndex = 0;
+                toUnit.selectedIndex = 1;
+            });
         });
 
         // 显示工具目录
