@@ -40,6 +40,18 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            /* 新增：让容器内元素垂直居中 */
+            flex-wrap: wrap;
+        }
+
+        /* 标题和时钟的容器 - 新增 */
+        .header-main {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            gap: 20px;
+            margin-bottom: 10px;
         }
 
         .logo {
@@ -47,6 +59,11 @@
             font-weight: bold;
             color: #2c3e50;
             text-decoration: none;
+        }
+
+        .header-tag {
+            font-size: 14px;
+            color: #666;
         }
 
         /* 工具目录容器 */
@@ -204,19 +221,154 @@
                 gap: 10px;
             }
 
+            .header-main {
+                flex-direction: column;
+                gap: 5px;
+            }
+
+            .flip-clock {
+                transform: scale(0.8);
+            }
+
             .tool-page {
                 padding: 20px;
             }
+        }
+
+        /* 翻页时钟容器 - 重点修改：缩小尺寸+居中对齐 */
+        .flip-clock {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-family: 'Arial', sans-serif;
+            /* 缩小整体尺寸 */
+            transform: scale(0.85);
+            transform-origin: center;
+        }
+
+        /* 单个数字卡片 - 缩小尺寸 */
+        .flip-digit {
+            position: relative;
+            width: 30px; /* 原40px */
+            height: 45px; /* 原60px */
+            background-color: #222;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            color: #fff;
+            font-size: 28px; /* 原36px */
+            font-weight: bold;
+            line-height: 45px; /* 与高度一致 */
+            text-align: center;
+            overflow: hidden;
+        }
+
+        /* 数字上半部分 */
+        .flip-digit .top {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 50%;
+            background-color: #222;
+            transform-origin: bottom;
+            backface-visibility: hidden;
+            z-index: 2;
+            line-height: 45px; /* 垂直居中 */
+        }
+
+        /* 数字下半部分 */
+        .flip-digit .bottom {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 50%;
+            background-color: #333;
+            transform-origin: top;
+            transform: rotateX(180deg);
+            backface-visibility: hidden;
+            z-index: 1;
+            line-height: 0; /* 调整对齐 */
+        }
+
+        /* 翻页动画 */
+        .flip-digit.flipping .top {
+            animation: flipTop 0.6s ease-in forwards;
+        }
+
+        .flip-digit.flipping .bottom {
+            animation: flipBottom 0.6s ease-out forwards;
+        }
+
+        @keyframes flipTop {
+            0% {
+                transform: rotateX(0deg);
+            }
+
+            100% {
+                transform: rotateX(-180deg);
+            }
+        }
+
+        @keyframes flipBottom {
+            0% {
+                transform: rotateX(180deg);
+            }
+
+            100% {
+                transform: rotateX(0deg);
+            }
+        }
+
+        /* 冒号样式 - 缩小尺寸 */
+        .flip-colon {
+            font-size: 28px; /* 原36px */
+            font-weight: bold;
+            color: #222;
+            line-height: 45px;
         }
     </style>
 </head>
 
 <body>
-    <!-- 顶部导航 -->
+    <!-- 顶部导航 - 调整布局：标题和时钟居中对齐 -->
     <header>
         <div class="header-container">
-            <a href="#" class="logo" id="home-btn">实用小工具合集</a>
-            <p>免费 | 好用 | 无广告（后续替换成广告）</p>
+            <!-- 标题+时钟容器：居中显示 -->
+            <div class="header-main">
+                <a href="#" class="logo" id="home-btn">实用小工具合集</a>
+                <!-- 翻页式数字时钟：与标题平齐 -->
+                <div class="flip-clock">
+                    <div class="flip-digit" data-digit="1">
+                        <div class="top">1</div>
+                        <div class="bottom">1</div>
+                    </div>
+                    <div class="flip-digit" data-digit="0">
+                        <div class="top">0</div>
+                        <div class="bottom">0</div>
+                    </div>
+                    <span class="flip-colon">:</span>
+                    <div class="flip-digit" data-digit="5">
+                        <div class="top">5</div>
+                        <div class="bottom">5</div>
+                    </div>
+                    <div class="flip-digit" data-digit="1">
+                        <div class="top">1</div>
+                        <div class="bottom">1</div>
+                    </div>
+                    <span class="flip-colon">:</span>
+                    <div class="flip-digit" data-digit="0">
+                        <div class="top">0</div>
+                        <div class="bottom">0</div>
+                    </div>
+                    <div class="flip-digit" data-digit="5">
+                        <div class="top">5</div>
+                        <div class="bottom">5</div>
+                    </div>
+                </div>
+            </div>
+            <!-- 免费|好用 标签 -->
+            <span class="header-tag">免费 | 好用</span>
         </div>
     </header>
 
@@ -414,6 +566,44 @@
     <!-- 引入第三方库：二维码生成（不用自己写逻辑） -->
     <script src="https://cdn.bootcdn.net/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script>
+        // 翻页式数字时钟  --START
+        function updateFlipClock() {
+            const now = new Date();
+            // 格式化时间为 HH:MM:SS
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            const timeStr = `${hours}${minutes}${seconds}`;
+
+            // 获取所有数字卡片
+            const digits = document.querySelectorAll('.flip-digit');
+
+            // 逐个更新数字并触发翻页
+            digits.forEach((digit, index) => {
+                const currentNum = digit.getAttribute('data-digit');
+                const newNum = timeStr[index];
+
+                if (currentNum !== newNum) {
+                    // 更新下一个数字
+                    digit.querySelector('.bottom').textContent = newNum;
+                    // 触发翻页动画
+                    digit.classList.add('flipping');
+                    // 动画结束后更新状态
+                    setTimeout(() => {
+                        digit.querySelector('.top').textContent = newNum;
+                        digit.setAttribute('data-digit', newNum);
+                        digit.classList.remove('flipping');
+                    }, 600); // 动画时长 0.6s
+                }
+            });
+        }
+
+        // 页面加载时立即初始化
+        updateFlipClock();
+        // 每秒更新一次
+        setInterval(updateFlipClock, 1000);
+
+        // 翻页式数字时钟  --END
         // 1. 显示/隐藏工具页面
         document.addEventListener('DOMContentLoaded', function () {
             // 点击工具卡片，显示对应工具页面
@@ -529,6 +719,119 @@
                     }
                 }
                 resultEl.textContent = result;
+            });
+
+            // 新增：7. 单位换算功能 - DOM加载完成后初始化
+            const unitConfig = {
+                length: {
+                    base: 'm', // 基准单位：米
+                    units: {
+                        m: { name: '米 (m)', rate: 1 },
+                        km: { name: '千米 (km)', rate: 0.001 },
+                        cm: { name: '厘米 (cm)', rate: 100 },
+                        mm: { name: '毫米 (mm)', rate: 1000 },
+                        chi: { name: '尺', rate: 3 },
+                        cun: { name: '寸', rate: 30 }
+                    }
+                },
+                weight: {
+                    base: 'kg', // 基准单位：公斤
+                    units: {
+                        kg: { name: '公斤 (kg)', rate: 1 },
+                        jin: { name: '斤', rate: 2 },
+                        g: { name: '克 (g)', rate: 1000 },
+                        t: { name: '吨 (t)', rate: 0.001 },
+                        mg: { name: '毫克 (mg)', rate: 1000000 }
+                    }
+                },
+                area: {
+                    base: 'm2', // 基准单位：平方米
+                    units: {
+                        m2: { name: '平方米 (m²)', rate: 1 },
+                        km2: { name: '平方千米 (km²)', rate: 1e-6 },
+                        hectare: { name: '公顷', rate: 0.0001 },
+                        mu: { name: '亩', rate: 0.0015 }
+                    }
+                }
+            };
+
+            // 1. 切换换算类型时，更新单位下拉框
+            const convertType = document.getElementById('convert-type');
+            const fromUnit = document.getElementById('from-unit');
+            const toUnit = document.getElementById('to-unit');
+
+            function updateUnitOptions(type) {
+                // 清空原有选项
+                fromUnit.innerHTML = '';
+                toUnit.innerHTML = '';
+                // 获取当前类型的单位配置
+                const units = unitConfig[type].units;
+                // 填充选项
+                for (const [key, value] of Object.entries(units)) {
+                    const option1 = document.createElement('option');
+                    option1.value = key;
+                    option1.textContent = value.name;
+                    fromUnit.appendChild(option1);
+
+                    const option2 = document.createElement('option');
+                    option2.value = key;
+                    option2.textContent = value.name;
+                    toUnit.appendChild(option2);
+                }
+                // 默认选中第一个和第二个选项
+                fromUnit.selectedIndex = 0;
+                toUnit.selectedIndex = 1;
+            }
+
+            // 初始化加载长度单位
+            updateUnitOptions('length');
+            // 监听类型切换
+            convertType.addEventListener('change', function () {
+                updateUnitOptions(this.value);
+            });
+
+            // 2. 换算核心逻辑
+            document.getElementById('unit-convert-btn').addEventListener('click', function () {
+                const inputVal = parseFloat(document.getElementById('unit-input').value);
+                const resultEl = document.getElementById('unit-result');
+
+                // 空值/非数字判断
+                if (isNaN(inputVal)) {
+                    resultEl.textContent = '请输入有效的数字！';
+                    return;
+                }
+
+                // 获取当前换算类型、源单位、目标单位
+                const type = convertType.value;
+                const fromKey = fromUnit.value;
+                const toKey = toUnit.value;
+
+                // 源单位和目标单位相同
+                if (fromKey === toKey) {
+                    resultEl.textContent = `${inputVal} ${unitConfig[type].units[fromKey].name} = ${inputVal} ${unitConfig[type].units[toKey].name}`;
+                    return;
+                }
+
+                // 换算公式：先转基准单位，再转目标单位
+                const baseRate = unitConfig[type].base;
+                const fromRate = unitConfig[type].units[fromKey].rate;
+                const toRate = unitConfig[type].units[toKey].rate;
+                // 计算：输入值 / 源单位换算系数 = 基准单位值；基准单位值 * 目标单位换算系数 = 目标值
+                const resultVal = (inputVal / fromRate) * toRate;
+                // 保留4位小数（避免过长）
+                const fixedResult = resultVal.toFixed(4).replace(/\.?0*$/, ''); // 去掉末尾的0和小数点
+
+                // 显示结果
+                resultEl.textContent = `${inputVal} ${unitConfig[type].units[fromKey].name} = ${fixedResult} ${unitConfig[type].units[toKey].name}`;
+            });
+
+            // 3. 清空按钮
+            document.getElementById('reset-unit').addEventListener('click', function () {
+                document.getElementById('unit-input').value = '';
+                document.getElementById('unit-result').textContent = '请输入数值并选择单位后点击「开始换算」';
+                // 重置单位选择
+                fromUnit.selectedIndex = 0;
+                toUnit.selectedIndex = 1;
             });
         });
 
@@ -660,122 +963,6 @@
         document.getElementById('reset-number').addEventListener('click', function () {
             document.getElementById('number-input').value = '';
             document.getElementById('number-result').textContent = '请输入数字后点击「转中文大写」';
-        });
-
-        // 新增：7. 单位换算功能
-        document.addEventListener('DOMContentLoaded', function () {
-            // 定义各类型的单位配置（键：单位值，值：{名称、换算系数（以基准单位为1）}）
-            const unitConfig = {
-                length: {
-                    base: 'm', // 基准单位：米
-                    units: {
-                        m: { name: '米 (m)', rate: 1 },
-                        km: { name: '千米 (km)', rate: 0.001 },
-                        cm: { name: '厘米 (cm)', rate: 100 },
-                        mm: { name: '毫米 (mm)', rate: 1000 },
-                        chi: { name: '尺', rate: 3 },
-                        cun: { name: '寸', rate: 30 }
-                    }
-                },
-                weight: {
-                    base: 'kg', // 基准单位：公斤
-                    units: {
-                        kg: { name: '公斤 (kg)', rate: 1 },
-                        jin: { name: '斤', rate: 2 },
-                        g: { name: '克 (g)', rate: 1000 },
-                        t: { name: '吨 (t)', rate: 0.001 },
-                        mg: { name: '毫克 (mg)', rate: 1000000 }
-                    }
-                },
-                area: {
-                    base: 'm2', // 基准单位：平方米
-                    units: {
-                        m2: { name: '平方米 (m²)', rate: 1 },
-                        km2: { name: '平方千米 (km²)', rate: 1e-6 },
-                        hectare: { name: '公顷', rate: 0.0001 },
-                        mu: { name: '亩', rate: 0.0015 }
-                    }
-                }
-            };
-
-            // 1. 切换换算类型时，更新单位下拉框
-            const convertType = document.getElementById('convert-type');
-            const fromUnit = document.getElementById('from-unit');
-            const toUnit = document.getElementById('to-unit');
-
-            function updateUnitOptions(type) {
-                // 清空原有选项
-                fromUnit.innerHTML = '';
-                toUnit.innerHTML = '';
-                // 获取当前类型的单位配置
-                const units = unitConfig[type].units;
-                // 填充选项
-                for (const [key, value] of Object.entries(units)) {
-                    const option1 = document.createElement('option');
-                    option1.value = key;
-                    option1.textContent = value.name;
-                    fromUnit.appendChild(option1);
-
-                    const option2 = document.createElement('option');
-                    option2.value = key;
-                    option2.textContent = value.name;
-                    toUnit.appendChild(option2);
-                }
-                // 默认选中第一个和第二个选项
-                fromUnit.selectedIndex = 0;
-                toUnit.selectedIndex = 1;
-            }
-
-            // 初始化加载长度单位
-            updateUnitOptions('length');
-            // 监听类型切换
-            convertType.addEventListener('change', function () {
-                updateUnitOptions(this.value);
-            });
-
-            // 2. 换算核心逻辑
-            document.getElementById('unit-convert-btn').addEventListener('click', function () {
-                const inputVal = parseFloat(document.getElementById('unit-input').value);
-                const resultEl = document.getElementById('unit-result');
-
-                // 空值/非数字判断
-                if (isNaN(inputVal)) {
-                    resultEl.textContent = '请输入有效的数字！';
-                    return;
-                }
-
-                // 获取当前换算类型、源单位、目标单位
-                const type = convertType.value;
-                const fromKey = fromUnit.value;
-                const toKey = toUnit.value;
-
-                // 源单位和目标单位相同
-                if (fromKey === toKey) {
-                    resultEl.textContent = `${inputVal} ${unitConfig[type].units[fromKey].name} = ${inputVal} ${unitConfig[type].units[toKey].name}`;
-                    return;
-                }
-
-                // 换算公式：先转基准单位，再转目标单位
-                const baseRate = unitConfig[type].base;
-                const fromRate = unitConfig[type].units[fromKey].rate;
-                const toRate = unitConfig[type].units[toKey].rate;
-                // 计算：输入值 / 源单位换算系数 = 基准单位值；基准单位值 * 目标单位换算系数 = 目标值
-                const resultVal = (inputVal / fromRate) * toRate;
-                // 保留4位小数（避免过长）
-                const fixedResult = resultVal.toFixed(4).replace(/\.?0*$/, ''); // 去掉末尾的0和小数点
-
-                // 显示结果
-                resultEl.textContent = `${inputVal} ${unitConfig[type].units[fromKey].name} = ${fixedResult} ${unitConfig[type].units[toKey].name}`;
-            });
-
-            // 3. 清空按钮
-            document.getElementById('reset-unit').addEventListener('click', function () {
-                document.getElementById('unit-input').value = '';
-                document.getElementById('unit-result').textContent = '请输入数值并选择单位后点击「开始换算」';
-                // 重置单位选择
-                fromUnit.selectedIndex = 0;
-                toUnit.selectedIndex = 1;
-            });
         });
 
         // 显示工具目录
