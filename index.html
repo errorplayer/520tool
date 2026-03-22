@@ -760,7 +760,7 @@
                     <div style="margin-bottom: 15px;">
                         <span style="font-weight: 500;">服药时间列表：</span>
                         <button class="btn" onclick="copyResult('drug-time-list')"
-                            style="padding: 6px 12px; font-size: 12px; margin-left: 10px;">复制列表</button>
+                            style="padding: 8px 16px; font-size: 14px; margin-left: 10px; touch-action: manipulation; -webkit-tap-highlight-color: rgba(0,0,0,0);">复制列表</button>
                     </div>
                     <pre id="drug-time-list"
                         style="white-space: pre-wrap; word-wrap: break-word; font-family: monospace; font-size: 14px; padding: 15px; background: #f8f9fa; border-radius: 8px; max-height: 300px; overflow-y: auto;">请点击「开始计算」生成列表</pre>
@@ -1411,7 +1411,9 @@
                 // 更新结果显示
                 document.getElementById('drug-total-count').textContent = timeList.length;
 
-                document.getElementById('drug-time-list').textContent = timeList.length > 0 ? timeList.join('\n') : '无符合条件的服药时间';
+                // （强制转纯文本，避免移动端格式问题）
+                const listText = timeList.length > 0 ? timeList.join('\n').replace(/\s+/g, ' ') : '无符合条件的服药时间';
+                document.getElementById('drug-time-list').textContent = listText;
             });
         });
         // ========== 药品服用次数计算逻辑结束 ==========
@@ -1425,16 +1427,64 @@
             });
         }
 
-        // 通用复制结果函数（适配所有工具）
-        function copyResult(id) {
-            const el = document.getElementById(id);
-            const text = el.textContent || el.innerText;
-            navigator.clipboard.writeText(text).then(() => {
-                alert('复制成功！');
-            }).catch(() => {
-                alert('复制失败，请手动复制');
-            });
+        // 通用复制结果函数（适配移动端+HTTPS/HTTP）
+function copyResult(id) {
+    const el = document.getElementById(id);
+    // 优先获取纯文本（兼容pre/普通div）
+    const text = el.innerText || el.textContent || '';
+    
+    if (!text || text === '请点击「开始计算」生成列表') {
+        alert('暂无可复制的内容！');
+        return;
+    }
+
+    // 方案1：尝试使用Clipboard API（HTTPS环境优先）
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(() => {
+            alert('复制成功！');
+        }).catch((err) => {
+            console.log('Clipboard API失败：', err);
+            fallbackCopyTextToClipboard(text); // 兜底方案
+        });
+    } else {
+        // 方案2：文本域兜底（兼容HTTP/移动端所有浏览器）
+        fallbackCopyTextToClipboard(text);
+    }
+}
+
+// 兜底复制方案（兼容所有环境）
+function fallbackCopyTextToClipboard(text) {
+    // 创建临时文本域（隐藏）
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    // 定位到视口外（避免闪烁）
+    textArea.style.position = 'fixed';
+    textArea.style.top = '-999px';
+    textArea.style.left = '-999px';
+    textArea.style.width = '200px';
+    textArea.style.height = '200px';
+    document.body.appendChild(textArea);
+    
+    // 选中并复制
+    textArea.focus();
+    textArea.select();
+    textArea.setSelectionRange(0, text.length); // 兼容移动端
+    
+    try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+            alert('复制成功！');
+        } else {
+            alert('复制失败，请手动复制');
         }
+    } catch (err) {
+        console.log('兜底方案失败：', err);
+        alert('复制失败，请手动复制');
+    } finally {
+        // 移除临时文本域
+        document.body.removeChild(textArea);
+    }
+}
     </script>
 </body>
 
