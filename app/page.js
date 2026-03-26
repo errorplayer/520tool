@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 
+export const dynamic = 'force-dynamic';   // ← 加这一行，禁用缓存
+
 const tools = [
   { id: 'drug-calculator', icon: '💊', title: '药品服用次数计算', desc: 'CRC专用 | 按给药时间/频率精准计算服药次数' },
   { id: 'word-count', icon: '📝', title: '字数统计工具', desc: '统计中文、英文、字符数，含空格/不含空格' },
