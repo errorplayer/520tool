@@ -141,6 +141,13 @@ header {
   font-size: 14px;
 }
 
+.tool-usage-count {
+  color: #999;
+  font-size: 12px;
+  margin-top: 12px;
+}
+
+
 /* 工具页面样式 */
 .tool-page {
   background-color: #fff;
@@ -383,6 +390,38 @@ header {
   padding: 15px;
   border-radius: 6px;
   overflow-x: auto;
+}
+
+/* 折叠功能样式 */
+.json-toggle {
+  background: none;
+  border: none;
+  color: #6c7a89;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0 4px;
+  margin-right: 2px;
+  transition: color 0.2s;
+  display: inline-block;
+  user-select: none;
+}
+
+.json-toggle:hover {
+  color: #5e6d7f;
+}
+
+.json-toggle:active {
+  color: #8b9bb4;
+}
+
+.json-collapsed-hint {
+  color: #5e6d7f;
+  font-style: italic;
+  margin: 0 4px;
+}
+
+.json-bracket {
+  color: #6c7a89;
 }
 
 
