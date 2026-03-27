@@ -5,6 +5,7 @@ import DailyHot from './_components/DailyHot';
 export const dynamic = 'force-dynamic';   // ← 加这一行，禁用缓存
 
 const tools = [
+  { id: 'text-heal', icon: '✨', title: '文本治愈排版', desc: 'AI智能优化，让工作邮件/社交媒体/文章更有温度' },
   { id: 'drug-calculator', icon: '💊', title: '药品服用次数计算', desc: 'CRC专用 | 按给药时间/频率精准计算服药次数' },
   { id: 'word-count', icon: '📝', title: '字数统计工具', desc: '统计中文、英文、字符数，含空格/不含空格' },
   { id: 'qrcode-generator', icon: '📱', title: '二维码生成器', desc: '输入文字/链接，一键生成二维码，可保存' },
@@ -24,9 +25,9 @@ export default async function Home() {
 
   return (
     <div className="container">
-      <div className="ad-top">
+      {/* <div className="ad-top">
         <p>【广告位】- 顶部横幅广告</p>
-      </div>
+      </div> */}
 
       <DailyHot />
 
@@ -52,9 +53,9 @@ export default async function Home() {
         </Link>
       </div>
 
-      <div className="ad-bottom">
+      {/* <div className="ad-bottom">
         <p>【广告位】- 底部广告</p>
-      </div>
+      </div> */}
     </div>
   );
 }

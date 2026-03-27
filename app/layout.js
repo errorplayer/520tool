@@ -8,7 +8,11 @@ export const metadata = {
   keywords: '实用小工具,字数统计,二维码生成,时间戳转换,免费工具',
   description: '免费好用的实用小工具合集，包含字数统计、二维码生成、时间戳转换等工具，无需下载，在线即用！',
   charset: 'UTF-8',
-  viewport: 'width=device-width, initial-scale=1.0',
+};
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
 };
 
 export default function RootLayout({ children }) {

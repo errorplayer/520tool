@@ -1,5 +1,20 @@
 # 520tool  
 
+
+## text-heal  
+
+|想做什么|修改哪个文件|location|  
+|---|---|---|   
+|增加/删除/修改场景（名称、描述等）|app/lib/text-heal-scenes.js|sceneList 数组|  
+|修改场景图标|	app/tools/text-heal/page.js|第 103-112 行 getSceneIcon 函数|  
+|修改每个场景的 prompt 细节|	app/lib/text-heal-scenes.js|	对应场景的 description 字段|  
+|修改整体 prompt 模板（如"保持原意不变"等规则）|	app/api/text-heal/providers/kimi.js|	第 23-33 行|  
+|  |app/api/text-heal/providers/deepseek.js|	第 23-30 行 |  
+|修改场景卡片的 UI 样式|	app/tools/text-heal/page.js	第 122-137 行（HTML 结构）|  
+|  | app/globals.css|	.scene-card 相关样式|  
+
+
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
