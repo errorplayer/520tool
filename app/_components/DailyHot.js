@@ -3,13 +3,17 @@
 import { useState, useEffect, useRef } from 'react';
 
 const tagColors = {
-  'Hot':  { bg: '#fff0f0', color: '#d93025' },
+  'Hot': { bg: '#fff0f0', color: '#d93025' },
   '突发': { bg: '#fff8f0', color: '#e65100' },
   '科技': { bg: '#f0f7ff', color: '#1565c0' },
   '娱乐': { bg: '#f8f0ff', color: '#7b1fa2' },
   '财经': { bg: '#fffdf0', color: '#f9a825' },
   '体育': { bg: '#f0fff4', color: '#2e7d32' },
-  'New':  { bg: '#f0fffe', color: '#00838f' },
+  'New': { bg: '#f0fffe', color: '#00838f' },
+  'Shock': { bg: '#fff0f0', color: '#d93025' },
+  '励志': { bg: '#f5e9e1', color: '#f14a08' },
+  '气候': { bg: '#f0fffe', color: '#00838f' },
+  '时事': { bg: '#f0f7ff', color: '#1565c0' },
 };
 
 export default function DailyHot() {
@@ -22,7 +26,7 @@ export default function DailyHot() {
       .then(json => {
         if (json.data) setItems(json.data);
       })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   if (items.length === 0) return null;
