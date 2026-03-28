@@ -52,10 +52,12 @@ if (typeof setInterval !== 'undefined') {
 
 // 获取客户端 IP（从 headers 中提取）
 export function getClientIp(req) {
+  // NextRequest 使用 headers.get() 方法访问 header
   return (
-    req.headers['x-forwarded-for']?.split(',')[0]?.trim() ||
-    req.headers['x-real-ip'] ||
-    req.socket?.remoteAddress ||
+    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    req.headers.get('x-real-ip') ||
+    req.headers.get('x-vercel-forwarded-for') ||
     'unknown'
   );
 }
+

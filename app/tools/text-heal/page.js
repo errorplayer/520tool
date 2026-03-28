@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { sceneList, getSceneById } from '../../lib/text-heal-scenes';
+import { getExamplesByScene } from '../../lib/text-heal-examples';
 
 // 可用的 AI 模型提供商
 const PROVIDERS = [
@@ -18,6 +19,11 @@ export default function TextHeal() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [rateLimit, setRateLimit] = useState(null);
+  const [currentExampleIndex, setCurrentExampleIndex] = useState(0);
+  const [isExampleVisible, setIsExampleVisible] = useState(false);
+  const [fadeState, setFadeState] = useState('visible');
+  const carouselRef = useRef(null);
+  const intervalRef = useRef(null);
 
   const handleSceneSelect = (sceneId) => {
     setSelectedScene(sceneId);
@@ -107,9 +113,51 @@ export default function TextHeal() {
       article: '📝',
       review: '⭐',
       chat: '💭',
+      group_anouncement: '📢'
     };
     return icons[id] || '🔧';
   };
+
+  // 获取当前场景的示例数据
+  const getCurrentExamples = useCallback(() => {
+    return selectedScene ? getExamplesByScene(selectedScene) : [];
+  }, [selectedScene]);
+
+  // 轮播控制 - 先淡出，再切换，再淡入
+  const nextExample = useCallback(() => {
+    const examples = getCurrentExamples();
+    if (examples.length > 0) {
+      setFadeState('fading');
+      setTimeout(() => {
+        setCurrentExampleIndex((prev) => (prev + 1) % examples.length);
+        setFadeState('visible');
+      }, 300);
+    }
+  }, [getCurrentExamples]);
+
+  // 自动轮播
+  useEffect(() => {
+    const examples = getCurrentExamples();
+    if (selectedScene && examples.length > 1) {
+      setIsExampleVisible(true);
+      setCurrentExampleIndex(0);
+      
+      intervalRef.current = setInterval(() => {
+        nextExample();
+      }, 4000);
+    } else {
+      setIsExampleVisible(false);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    }
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [selectedScene, nextExample, getCurrentExamples]);
 
   return (
     <div className="text-heal-page">
@@ -117,6 +165,39 @@ export default function TextHeal() {
         <h1>文本智能润色</h1>
         <p>AI 驱动，一键优化您的文本内容</p>
       </div>
+
+      {/* 示例轮播 */}
+      {isExampleVisible && getCurrentExamples().length > 0 && (
+        <div className="example-carousel" ref={carouselRef}>
+          <div className="carousel-title">
+            <span className="carousel-icon">✨</span>
+            优化示例
+          </div>
+          <div className={`carousel-content ${fadeState === 'fading' ? 'fade-out' : ''}`}>
+            <div className="example-box before">
+              <div className="example-label">优化前</div>
+              <div className="example-text">
+                {getCurrentExamples()[currentExampleIndex]?.before}
+              </div>
+            </div>
+            <div className="arrow-separator">→</div>
+            <div className="example-box after">
+              <div className="example-label">优化后</div>
+              <div className="example-text">
+                {getCurrentExamples()[currentExampleIndex]?.after}
+              </div>
+            </div>
+          </div>
+          <div className="carousel-indicators">
+            {getCurrentExamples().map((_, index) => (
+              <div
+                key={index}
+                className={`indicator ${index === currentExampleIndex ? 'active' : ''}`}
+              />
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* 场景选择 */}
       <div className="scene-selector">

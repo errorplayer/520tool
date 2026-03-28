@@ -2,6 +2,20 @@
 
 export const sceneList = [
   {
+    id: 'chat',
+    name: '聊天回复',
+    description: '让回复更得体、更有情商',
+    example: '好吧',
+    inputLimit: 2000,
+  },
+  {
+    id: 'group_anouncement',
+    name: '群内通知',
+    description: '使用规范、温和的语言，称谓恰当，帮助接收方快速理解核心信息',
+    example: '温馨提示',
+    inputLimit: 500,
+  },
+  {
     id: 'email',
     name: '商务邮件',
     description: '优化邮件的专业性和礼貌程度',
@@ -28,14 +42,7 @@ export const sceneList = [
     description: '让评价更有说服力和帮助性',
     example: '这个产品还行',
     inputLimit: 2000,
-  },
-  {
-    id: 'chat',
-    name: '聊天回复',
-    description: '让回复更得体、更有情商',
-    example: '好吧',
-    inputLimit: 2000,
-  },
+  }
 ];
 
 export function getSceneById(id) {
